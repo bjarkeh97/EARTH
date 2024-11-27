@@ -50,6 +50,21 @@ class BasisMatrix:
             [deepcopy(bm).add_step(-1, v, t), deepcopy(bm).add_step(1, v, t)]
         )
 
+    def add_split_fast(self, m: int, v: int, t: float) -> None:
+        xv = self.X[:, v]
+        bm = self.basis[m]
+        bxm = self.bx[:, m]  # Get the values for all x for the m'th term
+
+        hinge_neg = bxm * xv
+        hinge_pos = bxm * bm.hinge(1, xv, t)
+
+        self.bx = np.concatenate(
+            [self.bx, hinge_neg[:, None], hinge_pos[:, None]], axis=1
+        )
+        self.basis.extend(
+            [deepcopy(bm).add_step(-1, v, t), deepcopy(bm).add_step(1, v, t)]
+        )
+
         # self.bx = np.concatenate(
         #     [
         #         self.bx,
