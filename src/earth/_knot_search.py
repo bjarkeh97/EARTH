@@ -1,27 +1,31 @@
 import numpy as np
-from ._cholesky_update import cholupdate
+#from ._cholesky_update import cholupdate
 
 
 class KnotSearcher:
-    def __init__(self, bx: np.ndarray, y: np.ndarray, X: np.ndarray) -> None:
+    def __init__(self, bx: np.ndarray, y: np.ndarray, xv: np.ndarray, m: int) -> None:
         self.B = bx
         self.y = y
-        self.X = X
+        self.xv = xv
         self.L = None
+        self.m = m
 
     def generate_V(self) -> None:
         bx_mean = self.B.mean(axis=0)
         self.V = np.matmul(self.B.transpose(), self.B - bx_mean)
 
-    def generate_y(self) -> None:
+    def generate_c(self) -> None:
         y_mean = self.y.mean()
+        self.y_mean=y_mean
         self.c = np.dot(self.B.transpose(), y - y_mean)
 
     def update_c(self, u: int, t: int) -> None:
         """
         Update c
         """
-        pass
+        mask_1 = np.where((self.xv>=t)&(self.xv<u))
+        mask_2 = np.where(self.xv>=u)
+        self.c[-1] + sum((y[mask_1]-self.y_mean)*self.B[m,mask_1]*(self.xv[mask_1]-t))
 
     def update_V(self) -> None:
         """
@@ -42,6 +46,6 @@ if __name__ == "__main__":
 
     knts = KnotSearcher(bx, y)
     knts.generate_V()
-    knts.generate_y()
-
+    knts.generate_c()
+    knts.update_c(5,2)
     print("done")

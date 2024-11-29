@@ -1,5 +1,5 @@
 import numpy as np
-from typing import Literal, Self
+from typing import Literal
 import math
 from copy import deepcopy
 
@@ -8,7 +8,7 @@ class BasisFunction:
     def __init__(self) -> None:
         self.svt = []
 
-    def add_step(self, s: Literal[-1, 1], v: int, t: float) -> Self:
+    def add_step(self, s: Literal[-1, 1], v: int, t: float):
         self.svt.append((s, v, t))
         return self
 
@@ -19,7 +19,10 @@ class BasisFunction:
             return []
 
     def hinge(self, s: int, xv: np.ndarray, t: float) -> float:
-        return np.maximum(s * (xv - t), 0)
+        if s == 0:
+            return xv
+        else:
+            return np.maximum(s * (xv - t), 0)
 
     def evaluate(self, X: np.ndarray) -> np.ndarray:
         if self.svt:
@@ -50,7 +53,7 @@ class BasisMatrix:
             [deepcopy(bm).add_step(-1, v, t), deepcopy(bm).add_step(1, v, t)]
         )
 
-    def add_split_fast(self, m: int, v: int, t: float) -> None:
+    def add_split_(self, m: int, v: int, t: float) -> None:
         xv = self.X[:, v]
         bm = self.basis[m]
         bxm = self.bx[:, m]  # Get the values for all x for the m'th term
@@ -62,7 +65,7 @@ class BasisMatrix:
             [self.bx, hinge_neg[:, None], hinge_pos[:, None]], axis=1
         )
         self.basis.extend(
-            [deepcopy(bm).add_step(-1, v, t), deepcopy(bm).add_step(1, v, t)]
+            [deepcopy(bm).add_step(0, v, 0), deepcopy(bm).add_step(1, v, t)]
         )
 
         # self.bx = np.concatenate(

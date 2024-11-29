@@ -31,7 +31,7 @@ class ForwardPasser:
                         g.add_split(m, v, t)
                         coeffs, ssr, _, _ = np.linalg.lstsq(g.bx, y, rcond=None)
                         residuals = y - np.dot(g.bx, coeffs)
-                        ssr = np.pow(residuals, 2).sum()
+                        ssr = (residuals**2).sum()
                         if ssr < lof:
                             lof = ssr
                             m_star = m
