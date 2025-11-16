@@ -1,13 +1,16 @@
 [tool.poetry]
-name = "npyearth"
+name = "npearth"
 version = "0.1.0"
 description = "A package for the EARTH model for python in numpy"
 authors = ["Bjarke Geza Solyom Høgdall <bjarke@hogdall.dk>"]
 license = "MIT"
+packages = [{include = "npearth", from="src"}]
 
 [tool.poetry.dependencies]
-python = "^3.9"  # Adjust as necessary
-numpy = "^1.21.0"  # Add other dependencies here
+python = "^3.11"  # Adjust as necessary
+numpy = "^2.0.0"  # Add other dependencies here
+numba = "^0.62.1"
+scipy = "^1.16.3"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]

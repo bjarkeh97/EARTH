@@ -4,8 +4,8 @@ from time import time as timer
 sys.path.append(os.path.abspath(""))
 
 import numpy as np
-from src.earth.earth import EARTH
-from src.earth.earth_slow import EARTH as EARTH_SLOW
+from npearth.earth import EARTH
+from npearth.earth_slow import EARTH as EARTH_SLOW
 
 if __name__ == "__main__":
     # Simple example for testing
@@ -25,14 +25,15 @@ if __name__ == "__main__":
     # )  # Linear combination with noise
 
     # Step 2: Create an instance of EARTH and fit the model
-    earth_model = EARTH(M_max=6)
-    earth_model_slow = EARTH_SLOW(M_max=6)
+    earth_model = EARTH(M_max=5)
+    earth_model_slow = EARTH_SLOW(M_max=5)
     t0 = timer()
-    earth_model.fit(X, y)
-    print("Took time ", round(timer() - t0, 3), "seconds")
-    t1 = timer()
     earth_model_slow.fit(X, y)
-    print("Took time for slow ", round(timer() - t1, 3), "seconds")
+    print("Took time for slow ", round(timer() - t0, 3), "seconds")
+    t1 = timer()
+    earth_model.fit(X, y)
+    print("Took time for fast ", round(timer() - t1, 3), "seconds")
+    print("true coefs ", [2, 3, -1])
     print("earth coefs ", earth_model.coeffs)
     print("earth coefs slow ", earth_model_slow.coeffs)
     # Step 3: Make predictions on the same input
@@ -41,6 +42,7 @@ if __name__ == "__main__":
 
     # Step 4: Print the results (printing just the first 5 for brevity)
     print("Original y values (first 5):", y[:5])
+    print("Predicted y values slow (first 5):", y_pred_slow[:5])
     print("Predicted y values (first 5):", y_pred[:5])
     print("SSR", ((y - y_pred) ** 2).sum())
     print("SSR slow", ((y - y_pred_slow) ** 2).sum())

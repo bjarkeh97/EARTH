@@ -1,5 +1,5 @@
 import numpy as np
-from ._basis_function import BasisFunction, BasisMatrix
+from npearth._basis_function import BasisFunction, BasisMatrix
 from copy import deepcopy
 
 
@@ -12,11 +12,11 @@ class ForwardPasser:
         self, X: np.ndarray, y: np.ndarray, M_max: float
     ) -> tuple[list, list[BasisFunction]]:
         bx = BasisMatrix(X=X)
-        lof = np.inf
+        lof_star = np.inf
         M = 1
 
         while M <= M_max:
-            last_lof = lof
+            last_lof = lof_star
             m_star, v_star, t_star, coeffs_star = None, None, None, None
             for m in range(M):
                 vs_in_m = bx.basis[m].return_variables_used()
@@ -32,14 +32,16 @@ class ForwardPasser:
                         coeffs, ssr, _, _ = np.linalg.lstsq(g.bx, y, rcond=None)
                         residuals = y - np.dot(g.bx, coeffs)
                         ssr = (residuals**2).sum()
-                        if ssr < lof:
-                            lof = ssr
+                        if ssr < lof_star:
+                            lof_star = ssr
                             m_star = m
                             v_star = v
                             t_star = t
                             coeffs_star = coeffs
-            if lof == last_lof:
-                print(f"No improvement in LOF after {M} terms")
+            if lof_star == last_lof:
+                print(
+                    f"No improvement in LOF after {M} terms. LOF: {lof_star}, m*: {m_star}"
+                )
                 break
             bx.add_split(m_star, v_star, t_star)
             M += 2

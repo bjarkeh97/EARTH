@@ -1,5 +1,5 @@
 import numpy as np
-from ._forward_pass import ForwardPasser
+from npearth._forward_pass import ForwardPasser
 
 
 class EARTH:

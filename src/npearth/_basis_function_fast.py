@@ -8,7 +8,7 @@ class BasisFunction:
     def __init__(self) -> None:
         self.svt = []
 
-    def add_step(self, s: Literal[-1, 1], v: int, t: float):
+    def add_step(self, s: Literal[-1, 0, 1], v: int, t: float):
         self.svt.append((s, v, t))
         return self
 
@@ -64,9 +64,8 @@ class BasisMatrix:
         self.bx = np.concatenate(
             [self.bx, hinge_neg[:, None], hinge_pos[:, None]], axis=1
         )
-        self.basis.extend(
-            [deepcopy(bm).add_step(0, v, 0), deepcopy(bm).add_step(1, v, t)]
-        )
+        self.basis.append(deepcopy(bm).add_step(0, v, 0))
+        self.basis.append(deepcopy(bm).add_step(1, v, t))
 
         # self.bx = np.concatenate(
         #     [
