@@ -16,8 +16,7 @@ class KnotSearcherCholesky(KnotSearcherBase):
         v: int,
         ridge: float = 1e-8,
     ) -> None:
-        super().__init__(bx, y, xv, m, v)
-        self.ridge = ridge
+        super().__init__(bx, y, xv, m, v, ridge)
 
     def search_over_knots(self, ts: np.ndarray, lof_star: float) -> None:
         ssr_min = lof_star  # Initialize LOF to LOF^*
@@ -136,7 +135,7 @@ if __name__ == "__main__":
     # bx = np.genfromtxt("C:/Users/Bruger/Code/EARTH/src/earth/data/bx.csv")
     # y = np.genfromtxt("C:/Users/Bruger/Code/EARTH/src/earth/data/y.csv")
 
-    from npearth._basis_function_fast import BasisMatrix
+    from npearth._basis_function import BasisMatrix
 
     X = np.reshape([5, 4, 3, 2, 1, 1], (-1, 1))
     v = 0

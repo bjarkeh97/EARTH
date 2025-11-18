@@ -1,5 +1,9 @@
 import numpy as np
 from npearth._basis_function import BasisFunction, BasisMatrix
+from npearth._knotsearcher_base import KnotSearcherBase
+from npearth._knotsearcher_svd import KnotSearcherSVD
+from npearth._knotsearcher_cholesky import KnotSearcherCholesky
+from npearth._knotsearcher_cholesky_numba import KnotSearcherCholeskyNumba
 from copy import deepcopy
 
 
@@ -9,7 +13,12 @@ class ForwardPasser:
         self.bx = None
 
     def forward_pass(
-        self, X: np.ndarray, y: np.ndarray, M_max: float
+        self,
+        X: np.ndarray,
+        y: np.ndarray,
+        M_max: float,
+        KnotSearcher: KnotSearcherBase = KnotSearcherCholesky,
+        ridge: float = 1e-8,
     ) -> tuple[list, list[BasisFunction]]:
         bx = BasisMatrix(X=X)
         lof_star = np.inf
@@ -22,29 +31,28 @@ class ForwardPasser:
                 vs_in_m = bx.basis[m].return_variables_used()
                 vs_not_in_m = [v for v in range(bx.n) if v not in vs_in_m]
                 for v in vs_not_in_m:
-                    # Find ts from set {x_vj | B_m(x_ij) > 0} with x_ij the j'th row in X
-                    # We have B_m(X) stored as bx[:,m]
                     active_basis_mask = bx.bx[:, m] > 0
+                    xv = X[:, v]
                     ts = X[active_basis_mask, v]
-                    for t in ts:
-                        g = deepcopy(bx)
-                        g.add_split(m, v, t)
-                        coeffs, ssr, _, _ = np.linalg.lstsq(g.bx, y, rcond=None)
-                        residuals = y - np.dot(g.bx, coeffs)
-                        ssr = (residuals**2).sum()
-                        if ssr < lof_star:
-                            lof_star = ssr
-                            m_star = m
-                            v_star = v
-                            t_star = t
-                            coeffs_star = coeffs
+                    knot_searcher = KnotSearcher(deepcopy(bx), y, xv, m, v, ridge)
+                    lof, t, coeffs = knot_searcher.search_over_knots(ts, lof_star)
+                    if lof < lof_star:
+                        lof_star = lof
+                        m_star = m
+                        v_star = v
+                        t_star = t
+                        coeffs_star = coeffs
             if lof_star == last_lof:
                 print(
                     f"No improvement in LOF after {M} terms. LOF: {lof_star}, m*: {m_star}"
                 )
+                # self.coefs = coeffs_star
+                # self.bx = bx
+                # return self.coefs, bx.basis
                 break
-            bx.add_split(m_star, v_star, t_star)
+            bx.add_split_end(m_star, v_star, t_star)
             M += 2
+
         self.coefs = coeffs_star
         self.bx = bx
         return self.coefs, bx.basis

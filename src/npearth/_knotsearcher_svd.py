@@ -1,6 +1,6 @@
 import numpy as np
 from copy import deepcopy
-from npearth._basis_function_fast import BasisMatrix
+from npearth._basis_function import BasisMatrix
 from npearth._knotsearcher_base import KnotSearcherBase
 
 
