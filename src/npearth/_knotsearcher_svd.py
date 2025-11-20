@@ -13,8 +13,11 @@ class KnotSearcherSVD(KnotSearcherBase):
         for t in ts:
             g = deepcopy(self.g)
             g.add_split_end(self.m, self.v, t)
-            coeffs, ssr, _, _ = np.linalg.lstsq(g.bx, self.y, rcond=None)
-            residuals = self.y - np.dot(g.bx, coeffs)
+            w = np.sqrt(self.sample_weight)
+            bx_weighted = g.bx * w[:, None]
+            y_weighted = self.y * w
+            coeffs, ssr, _, _ = np.linalg.lstsq(bx_weighted, y_weighted, rcond=None)
+            residuals = y_weighted - np.dot(bx_weighted, coeffs)
             ssr = (residuals**2).sum()
             if ssr < lof_star:
                 lof_star = ssr

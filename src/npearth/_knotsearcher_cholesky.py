@@ -7,16 +7,6 @@ from npearth._knotsearcher_base import KnotSearcherBase
 
 
 class KnotSearcherCholesky(KnotSearcherBase):
-    def __init__(
-        self,
-        bx: np.ndarray,
-        y: np.ndarray,
-        xv: np.ndarray,
-        m: int,
-        v: int,
-        ridge: float = 1e-8,
-    ) -> None:
-        super().__init__(bx, y, xv, m, v, ridge)
 
     def search_over_knots(self, ts: np.ndarray, lof_star: float) -> None:
         ssr_min = lof_star  # Initialize LOF to LOF^*
@@ -28,11 +18,23 @@ class KnotSearcherCholesky(KnotSearcherBase):
         gn = copy(self.g)
         gn.add_split_end(self.m, self.v, max(self.xv))
 
+        # W = np.diag(
+        #     self.weights
+        # )  # W_ij = \delta_ij w_i (for normal distribution assumption w_i = 1/\sigma_i)
+        w = np.sqrt(self.sample_weight.astype(np.float64))
+
         # Sort all relevant matrices/vectors accordingly
-        bx_sorted = gn.bx[sort_idx, :]  # Sort basis matrix accordingly
-        y_sorted = self.y[sort_idx]  # Sort response vector accordingly
+        bx_sorted = np.ascontiguousarray(
+            (gn.bx * w[:, None])[sort_idx, :].astype(np.float64)
+        )  # Sort basis matrix accordingly
+        y_sorted = np.ascontiguousarray(
+            (self.y * w)[sort_idx].astype(np.float64)
+        )  # Sort response vector accordingly
+        # y_square = y_sorted @ y_sorted  # Precompute y^T y as is O(N)
+        xv_sorted = np.ascontiguousarray(
+            self.xv[sort_idx].astype(np.float64)
+        )  # Sort predictor vector accordingly
         y_square = y_sorted @ y_sorted  # Precompute y^T y as is O(N)
-        xv_sorted = self.xv[sort_idx]  # Sort predictor vector accordingly
         active_basis_mask = bx_sorted[:, self.m] > 0
 
         # rank = np.linalg.matrix_rank(bx_sorted)
@@ -149,7 +151,7 @@ if __name__ == "__main__":
 
     bm = BasisMatrix(X)
 
-    knts2 = KnotSearcherCholesky(bm, y, xv, 0, 0)
+    knts2 = KnotSearcherCholesky(bm, y, xv, 0, 0, np.ones_like(y), 1e-10)
     ssr, t, a = knts2.search_over_knots(xv, np.inf)
     print(f"t: {t}, ssr: {ssr}, a: {a}")
 

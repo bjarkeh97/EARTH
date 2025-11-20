@@ -26,26 +26,26 @@ if __name__ == "__main__":
         return X.reshape(-1, 1), y  # Reshape for sklearn compatibility
 
     # Step 2: Split Data
-    n = 10000
+    n = 2500
     X, y = generate_sine_data(n_samples=n, noise_level=0.1)
     X_train, X_test, y_train, y_test = train_test_split(
         X, y, test_size=0.4, random_state=42
     )
 
     # Step 3: Fit the EARTH Model
-    earth_model = EARTH(M_max=15)
+    earth_model = EARTH(M_max=12, knot_searcher=KnotSearcherCholesky)
     t0 = timer()
     earth_model.fit(X_train, y_train)
     t1 = timer()
     print(f"Cholesky took time {round(t1-t0,5)}")
 
-    earth_model_svd = EARTH(M_max=15, knot_searcher=KnotSearcherSVD)
+    earth_model_svd = EARTH(M_max=12, knot_searcher=KnotSearcherSVD)
     t2 = timer()
     earth_model_svd.fit(X_train, y_train)
     t3 = timer()
     print(f"SVD took time {round(t3-t2,5)}")
 
-    earth_model_np = EARTH(M_max=15, knot_searcher=KnotSearcherCholeskyNumba)
+    earth_model_np = EARTH(M_max=15)
     t2 = timer()
     earth_model_np.fit(X_train, y_train)
     t3 = timer()
@@ -62,8 +62,8 @@ if __name__ == "__main__":
     y_pred_test_dt = dt.predict(X_test)
 
     # Step 4: Make Predictions
-    y_pred = earth_model.predict(X)
-    y_pred_test = earth_model.predict(X_test)
+    y_pred = earth_model_np.predict(X)
+    y_pred_test = earth_model_np.predict(X_test)
     y_pred_svd = earth_model_svd.predict(X)
 
     print(

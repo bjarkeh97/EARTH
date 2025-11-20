@@ -223,16 +223,6 @@ def search(
 
 
 class KnotSearcherCholeskyNumba(KnotSearcherBase):
-    def __init__(
-        self,
-        bx: np.ndarray,
-        y: np.ndarray,
-        xv: np.ndarray,
-        m: int,
-        v: int,
-        ridge: float = 1e-8,
-    ) -> None:
-        super().__init__(bx, y, xv, m, v, ridge)
 
     def search_over_knots(self, ts: np.ndarray, lof_star: float) -> None:
         ssr_min = lof_star  # Initialize LOF to LOF^*
@@ -244,12 +234,19 @@ class KnotSearcherCholeskyNumba(KnotSearcherBase):
         gn = copy(self.g)
         gn.add_split_end(self.m, self.v, max(self.xv))
 
+        # W = np.diag(
+        #     self.weights
+        # )  # W_ij = \delta_ij w_i (for normal distribution assumption w_i = 1/\sigma_i)
+        w = np.sqrt(
+            self.sample_weight.astype(np.float64)
+        )  # Since we are given diag(W) we find sqrt(diag(W))
+
         # Sort all relevant matrices/vectors accordingly
         bx_sorted = np.ascontiguousarray(
-            gn.bx[sort_idx, :].astype(np.float64)
+            (gn.bx * w[:, None])[sort_idx, :].astype(np.float64)
         )  # Sort basis matrix accordingly
         y_sorted = np.ascontiguousarray(
-            self.y[sort_idx].astype(np.float64)
+            (self.y * w)[sort_idx].astype(np.float64)
         )  # Sort response vector accordingly
         # y_square = y_sorted @ y_sorted  # Precompute y^T y as is O(N)
         xv_sorted = np.ascontiguousarray(
@@ -272,6 +269,8 @@ if __name__ == "__main__":
     X = np.reshape([5.0, 4.0, 3.0, 2.0, 1.0, 1.0], (-1, 1))
     v = 0
     xv = X[:, v]
+    weights = np.array([1, 1, 1, 1, 1, 1])
+    # weights = weights / weights.mean()
 
     print(f"X: {X}")
 
@@ -281,7 +280,7 @@ if __name__ == "__main__":
 
     bm = BasisMatrix(X)
 
-    knts2 = KnotSearcherCholeskyNumba(bm, y, xv, 0, 0)
+    knts2 = KnotSearcherCholeskyNumba(bm, y, xv, 0, 0, weights, 1e-10)
     ssr, t, a = knts2.search_over_knots(xv, np.inf)
     print(f"t: {t}, ssr: {ssr}, a: {a}")
 

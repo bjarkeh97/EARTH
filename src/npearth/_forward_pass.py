@@ -17,7 +17,8 @@ class ForwardPasser:
         X: np.ndarray,
         y: np.ndarray,
         M_max: float,
-        KnotSearcher: KnotSearcherBase = KnotSearcherCholesky,
+        sample_weights: np.ndarray,
+        KnotSearcher: KnotSearcherBase = KnotSearcherCholeskyNumba,
         ridge: float = 1e-8,
     ) -> tuple[list, list[BasisFunction]]:
         bx = BasisMatrix(X=X)
@@ -34,7 +35,9 @@ class ForwardPasser:
                     active_basis_mask = bx.bx[:, m] > 0
                     xv = X[:, v]
                     ts = X[active_basis_mask, v]
-                    knot_searcher = KnotSearcher(deepcopy(bx), y, xv, m, v, ridge)
+                    knot_searcher = KnotSearcher(
+                        deepcopy(bx), y, xv, m, v, sample_weights, ridge
+                    )
                     lof, t, coeffs = knot_searcher.search_over_knots(ts, lof_star)
                     if lof < lof_star:
                         lof_star = lof

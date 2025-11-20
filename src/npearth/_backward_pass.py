@@ -10,17 +10,21 @@ class BackwardsStepwise:
         self.ridge = ridge
 
     def backward_pass(
-        self, basis: list[BasisFunction], X: np.ndarray, y: np.ndarray
+        self,
+        basis: list[BasisFunction],
+        X: np.ndarray,
+        y: np.ndarray,
+        sample_weight: np.ndarray,
     ) -> tuple[list[BasisFunction], list]:
         J_star = basis  # Initial set of basis functions
         K_star = J_star[:]
-        coeffs_star, lof_star = self.evaluate_basis(J_star, X, y)
+        coeffs_star, lof_star = self.evaluate_basis(J_star, X, y, sample_weight)
         for M in range(len(J_star), 0, -1):  # M = M_max to 2
             b = np.inf
             L = K_star[:]
             for m in range(1, M):  # m = 2 to M
                 K = L[:m] + L[m + 1 :]  # L - {m}
-                a, lof = self.evaluate_basis(K, X, y)
+                a, lof = self.evaluate_basis(K, X, y, sample_weight)
                 if lof < b:
                     b = lof
                     K_star = K
@@ -33,10 +37,17 @@ class BackwardsStepwise:
         return J_star, coeffs_star
 
     def evaluate_basis(
-        self, basis: list[BasisFunction], X: np.ndarray, y: np.ndarray
+        self,
+        basis: list[BasisFunction],
+        X: np.ndarray,
+        y: np.ndarray,
+        sample_weight: np.ndarray,
     ) -> tuple[list, float]:
         # Create Bx #O(NM) Evaluate N times for M functions
         bx = np.column_stack([b.evaluate(X) for b in basis])
+        w = np.sqrt(sample_weight)  # sqrt(W)
+        bx = bx * w[:, None]
+        y = y * w
 
         rank = np.linalg.matrix_rank(bx)
         C = rank + 1
@@ -70,5 +81,7 @@ if __name__ == "__main__":
         y = pickle.load(f)
 
     backwardsstepwise = BackwardsStepwise(ridge=1e-8)
-    J_star, coeffs_star = backwardsstepwise.backward_pass(model.basis, X, y)
+    J_star, coeffs_star = backwardsstepwise.backward_pass(
+        model.basis, X, y, np.ones_like(y)
+    )
     print("done")

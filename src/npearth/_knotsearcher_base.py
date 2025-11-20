@@ -17,6 +17,7 @@ class KnotSearcherBase(ABC):
         xv: np.ndarray,
         m: int,
         v: int,
+        sample_weight: np.ndarray,
         ridge: float,
     ) -> None:
         self.g = g  # BasisMatrix instance
@@ -24,6 +25,7 @@ class KnotSearcherBase(ABC):
         self.xv = xv  # Sorted unique predictor values for feature v
         self.m = m  # Index of basis function being split
         self.v = v  # Predictive variable index for this split
+        self.sample_weight = sample_weight  # Sample weights. The diagonal of the W matrix in WLS (eg 1/sigma^2). The weight in sum_i w_i L_i of the likelihood
         self.ridge = ridge  # Ridge term for the least square fit
 
     @abstractmethod
