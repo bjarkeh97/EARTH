@@ -116,7 +116,7 @@ class KnotSearcherCholesky(KnotSearcherBase):
             L = choldowndate(cholupdate(L, x_u), x_d)
 
             # L = np.linalg.cholesky(V + self.ridge * np.eye(M))
-            a = cholsolve(L + self.ridge * np.eye(M), c)
+            a = cholsolve(L, c)
             SSR = y_square - a @ c  # only O(M) now so in total (O(NM)) for all
             if SSR < 0:
                 SSR = np.inf

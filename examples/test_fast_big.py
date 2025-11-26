@@ -1,6 +1,4 @@
-import os, sys
-
-sys.path.append(os.path.abspath(".."))
+import logging
 from time import time as timer
 import numpy as np
 from matplotlib import pyplot as plt
@@ -15,6 +13,11 @@ if __name__ == "__main__":
     from sklearn.neural_network import MLPRegressor
     from sklearn.tree import DecisionTreeRegressor
     from sklearn.ensemble import RandomForestRegressor
+
+    logging.basicConfig(
+        level=logging.INFO,
+        format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
+    )
 
     # Step 1: Generate Sine Curve Data
     def generate_data(
@@ -96,39 +99,3 @@ if __name__ == "__main__":
         "sum of abs residuals MLP",
         np.sqrt(sum((y_test - y_pred_test_mlp) ** 2)).round(4),
     )
-
-    # # Step 5: Visualize Results
-    # plt.figure(figsize=(10, 6))
-    # plt.scatter(X_train, y_train, color="blue", label="Training Data", alpha=0.5)
-    # plt.scatter(X_test, y_test, color="orange", label="Test Data", alpha=0.5)
-    # plt.plot(X, y_pred, color="red", label="Predictions", linewidth=2)
-    # plt.plot(
-    #     X,
-    #     y_pred_mlp,
-    #     color="green",
-    #     label="MLP Predictions",
-    #     linewidth=2,
-    #     linestyle="--",
-    # )
-    # plt.plot(
-    #     X,
-    #     y_pred_svd,
-    #     color="blue",
-    #     label="MARS SVD Predictions",
-    #     linewidth=2,
-    #     linestyle="--",
-    # )
-    # plt.plot(
-    #     X,
-    #     y_pred_dt,
-    #     color="purple",
-    #     label="Decision Tree Predictions",
-    #     linewidth=2,
-    #     linestyle="-.",
-    # )
-    # plt.title("EARTH Model Fit on Sine Curve")
-    # plt.xlabel("X")
-    # plt.ylabel("y")
-    # plt.legend()
-    # plt.grid()
-    # plt.show()

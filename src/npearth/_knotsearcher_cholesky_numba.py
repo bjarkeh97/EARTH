@@ -1,9 +1,12 @@
 import numpy as np
 from numba import njit
 from copy import deepcopy, copy
+import logging
 
 from npearth._cholesky_update import cholupdate, choldowndate, cholsolve
 from npearth._knotsearcher_base import KnotSearcherBase
+
+logger = logging.getLogger(__name__)
 
 
 @njit(fastmath=True, cache=True)
@@ -19,21 +22,24 @@ def search(
     N = bx_sorted.shape[0]
     M = bx_sorted.shape[1]
 
-    # y_square = y_sorted @ y_sorted  (compute as loop for numba friendliness)
+    # For logging skipped searches due to bad denom
+    skip_counter = 0
+
+    # y_square = y_sorted @ y_sorted  (compute as loop for numba friendliness) - precompute O(N)
     y_square = 0.0
     for ii in range(N):
         y_square += y_sorted[ii] * y_sorted[ii]
 
-    # boolean mask (fine)
+    # boolean mask (fine) ~ bx_sorted[:, m] > 0
     active_basis_mask = np.empty(N, dtype=np.bool_)
     for ii in range(N):
         active_basis_mask[ii] = bx_sorted[ii, m] > 0.0
 
-    # V = bx_sorted.T @ bx_sorted   (Numba handles dot for contiguous float64)
+    # V = bx_sorted.T @ bx_sorted   (Numba handles dot for contiguous float64) - Matrix product use np.linalg - O(NM^2)
     V = bx_sorted.T @ bx_sorted  # resulting (M,M) float64
 
     # c = bx_sorted.T @ y_sorted
-    c = bx_sorted.T @ y_sorted  # (M,)
+    c = bx_sorted.T @ y_sorted  # (M,) - O(MN)
 
     # L = cholesky(V + ridge*I)  (numba supports np.linalg.cholesky)
     # Build V + ridge*I in place to avoid temporary eye allocation:
@@ -45,7 +51,7 @@ def search(
     for ii in range(M):
         V[ii, ii] -= ridge
 
-    # initialize working arrays
+    # initialize working arrays - For keeping track of changes in V for cholesky update
     V_m_old = np.empty(M, dtype=np.float64)
     for j in range(M):
         V_m_old[j] = V[j, M - 1]
@@ -94,10 +100,10 @@ def search(
         for jj in range(M):
             V_m_old[jj] = V[jj, M - 1]
 
-        # for each column j != M-1 compute V_tj and the incremental update
+        # for j != M-1 compute V_tj and the incremental update
         for j in range(M - 1):
             # V_tj = sum_{k=last_last_i}^{last_i-1} bx[k,m]*bx[k,j] + V_u[j]
-            V_tj = V_u[j]
+            V_tj = V_u[j]  # Initialize variable V_tj
             if last_last_i < last_i:
                 s_v = 0.0
                 for k in range(last_last_i, last_i):
@@ -105,16 +111,16 @@ def search(
                 V_tj = V_u[j] + s_v
             V_u[j] = V_tj
 
-            # incremental term over k in [last_i, i)
+            # inc_j = sum_{k_l|last_i<=l<i}bx[k_l,m]bx[k_l,j] * (X[k_l,v] - t)
             inc = 0.0
             if last_i < i:
                 for k in range(last_i, i):
                     inc += bx_sorted[k, m] * bx_sorted[k, j] * (xv_sorted[k] - t)
 
             V[j, M - 1] = V[j, M - 1] + inc + (u - t) * V_tj
-            V[M - 1, j] = V[j, M - 1]
+            V[M - 1, j] = V[j, M - 1]  # V is symmetric
 
-        # ------- update diagonal entry V[M-1,M-1] -------
+        # ------- update V[M-1,M-1] -------
         # D_t = sum_{k=last_last_i}^{last_i-1} bx[k,m]^2 + D_u
         D_t = D_u
         if last_last_i < last_i:
@@ -152,7 +158,7 @@ def search(
         for jj in range(M):
             if V[jj, M - 1] != V_m_old[jj]:
                 all_zero = False
-                break
+                break  # What about C[M]?? I guess we should measure if that changes?
         if all_zero:
             # nothing changed, continue
             u = t
@@ -160,42 +166,31 @@ def search(
             last_i = i
             continue
 
-        # compute dVM in place into x_u
-        for jj in range(M):
-            x_u[jj] = V[jj, M - 1] - V_m_old[jj]
-
         # guard against small/negative pivot
-        denom = x_u[M - 1]
+        denom = V[M - 1, M - 1] - V_m_old[M - 1]  # DeltaV[M]
         if denom <= 0.0:
             # numerical problem; skip this knot
             u = t
             last_last_i = last_i
             last_i = i
+            skip_counter += 1
             continue
 
         inv_sqrt = 1.0 / np.sqrt(denom)
+        # compute dVM in place into x_u
         for jj in range(M):
-            x_u[jj] = x_u[jj] * inv_sqrt
+            x_u[jj] = (V[jj, M - 1] - V_m_old[jj]) * inv_sqrt
 
         # x_d = x_u but with last element zero
-        for jj in range(M):
+        for jj in range(M - 1):
             x_d[jj] = x_u[jj]
         x_d[M - 1] = 0.0
 
         # update L using jitted chol update/downdate
-        L = choldowndate(cholupdate(L, x_u), x_d)
-
-        # solve for coefficients: a = cholsolve(L + ridge * I, c)
-        # Build matrix T = L + ridge*I (we will modify a small temp diagonal)
-        # We'll create a temporary copy of L to add ridge to diagonal — allocate once per knot
-        T = np.empty((M, M), dtype=np.float64)
-        for jj in range(M):
-            for kk in range(M):
-                T[jj, kk] = L[jj, kk]
-        for jj in range(M):
-            T[jj, jj] += ridge
-
-        a = cholsolve(T, c)
+        L = choldowndate(
+            cholupdate(L, x_u), x_d
+        )  # New L includes the original ridge term as of math
+        a = cholsolve(L, c)
 
         # SSR = y_square - a @ c  (compute dot by loop)
         ac = 0.0
@@ -219,7 +214,7 @@ def search(
         last_i = i
 
     # return best found
-    return ssr_min, t_star, a_best
+    return ssr_min, t_star, a_best, skip_counter
 
 
 class KnotSearcherCholeskyNumba(KnotSearcherBase):
@@ -253,9 +248,15 @@ class KnotSearcherCholeskyNumba(KnotSearcherBase):
             self.xv[sort_idx].astype(np.float64)
         )  # Sort predictor vector accordingly
 
-        ssr_min, t_star, a_best = search(
+        ssr_min, t_star, a_best, skips = search(
             bx_sorted, y_sorted, xv_sorted, self.ridge, self.m, ssr_min
         )
+
+        if skips > 0:
+            logger.info(
+                f"Skipped {skips} knots due to denom<=0. "
+                f"(ridge={self.ridge:.1e}, m={self.m}, basis_size={bx_sorted.shape[1]})"
+            )
 
         return ssr_min, t_star, a_best
 
@@ -265,6 +266,11 @@ if __name__ == "__main__":
     # y = np.genfromtxt("C:/Users/Bruger/Code/EARTH/src/earth/data/y.csv")
 
     from npearth._basis_function import BasisMatrix
+
+    logging.basicConfig(
+        level=logging.WARNING,
+        format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
+    )
 
     X = np.reshape([5.0, 4.0, 3.0, 2.0, 1.0, 1.0], (-1, 1))
     v = 0
@@ -280,7 +286,7 @@ if __name__ == "__main__":
 
     bm = BasisMatrix(X)
 
-    knts2 = KnotSearcherCholeskyNumba(bm, y, xv, 0, 0, weights, 1e-10)
+    knts2 = KnotSearcherCholeskyNumba(bm, y, xv, 0, 0, weights, 1e-8)
     ssr, t, a = knts2.search_over_knots(xv, np.inf)
     print(f"t: {t}, ssr: {ssr}, a: {a}")
 

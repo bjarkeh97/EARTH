@@ -119,7 +119,7 @@ class EARTH:
             self.ridge,
         )
         if self.prune_model:
-            pruner = BackwardsStepwise(ridge=self.ridge)
+            pruner = BackwardsStepwise(ridge=self.ridge, d=3)
             self.basis_, self.coef_ = pruner.backward_pass(
                 self.basis_, X, y, sample_weight
             )

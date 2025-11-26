@@ -4,10 +4,11 @@ from npearth._basis_function import BasisFunction
 
 
 class BackwardsStepwise:
-    def __init__(self, ridge: float):
-        self.best_basis = None
-        self.best_coeffs = None
+    def __init__(self, ridge: float, d: float):
+        self.best_basis: list[BasisFunction] = None
+        self.best_coeffs: np.ndarray = None
         self.ridge = ridge
+        self.d = d
 
     def backward_pass(
         self,
@@ -45,17 +46,23 @@ class BackwardsStepwise:
     ) -> tuple[list, float]:
         # Create Bx #O(NM) Evaluate N times for M functions
         bx = np.column_stack([b.evaluate(X) for b in basis])
-        w = np.sqrt(sample_weight)  # sqrt(W)
-        bx = bx * w[:, None]
-        y = y * w
-
-        rank = np.linalg.matrix_rank(bx)
-        C = rank + 1
         N, M = bx.shape
+        w = np.sqrt(sample_weight)  # sqrt(W)
+        bx_weighted = bx * w[:, None]
+        bx_squared = bx_weighted.T @ bx_weighted  # O(NM^2)
+        G_r_inv = np.linalg.inv(bx_squared + self.ridge * np.eye(M))  # O(M^3)
+        edof = np.trace(bx_squared @ G_r_inv)
+        y_weighted = y * w
+
+        C = (
+            edof + 1 + self.d * (M - 1)
+        )  # M-1 is number of non-constant basis functions. (Might actually not be if a knot is place at last x_i...)
         coeffs, ssr, _, _ = np.linalg.lstsq(
-            bx.T @ bx + self.ridge * np.eye(M), bx.T @ y, rcond=None
+            bx_squared + self.ridge * np.eye(M),
+            bx_weighted.T @ y_weighted,
+            rcond=None,
         )
-        residuals = y - np.dot(bx, coeffs)
+        residuals = y_weighted - np.dot(bx_weighted, coeffs)
         ssr = (residuals**2).sum()
         lof = ssr / (1 - C / N) ** 2  # GCV score
         # Solve for a, ssr  O(M^3)
