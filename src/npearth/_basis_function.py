@@ -66,22 +66,3 @@ class BasisMatrix:
         )
         self.basis.append(deepcopy(bm).add_step(0, v, 0))
         self.basis.append(deepcopy(bm).add_step(1, v, t))
-
-        # self.bx = np.concatenate(
-        #     [
-        #         self.bx,
-        #         (self.bx[:, m] * bm.hinge(-1, xv, t))
-        #         .reshape((self.m, 1))
-        #         .astype(float),
-        #     ], axis=1
-        # )
-        # self.basis.append(deepcopy(bm).add_step(-1,v,t))
-        # self.bx = np.concatenate(
-        #     [
-        #         self.bx,
-        #         (self.bx[:, m] * bm.hinge(1, xv, t))
-        #         .reshape((self.m, 1))
-        #         .astype(float),
-        #     ], axis=1
-        # )
-        # self.basis.append(deepcopy(bm).add_step(1,v,t))

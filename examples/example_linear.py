@@ -20,7 +20,7 @@ if __name__ == "__main__":
     t0 = timer()
     earth_model.fit(X, y)
     print("Took time ", round(timer() - t0, 3), "seconds")
-    print("earth coefs ", earth_model.coeffs)
+    print("earth coefs ", earth_model.coef_)
     # Step 3: Make predictions on the same input
     y_pred = earth_model.predict(X)
 
