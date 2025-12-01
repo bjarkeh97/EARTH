@@ -1,22 +1,42 @@
 [tool.poetry]
 name = "npearth"
 version = "0.1.0"
-description = "A package for the EARTH model for python in numpy"
+description = "A numpy/numba-based implementation of Multivariate Adaptive Regression Splines (MARS)"
 authors = ["Bjarke Geza Solyom Høgdall <bjarke@hogdall.dk>"]
 license = "MIT"
-packages = [{include = "npearth", from="src"}]
+readme = "README.md"
+packages = [{ include = "npearth", from = "src" }]
+homepage = "https://github.com/bjarkeh97/EARTH"
+repository = "https://github.com/bjarkeh97/EARTH"
+
+# Include minimal files
+include = ["README.md"]
+
+# Exclude unnecessary files (very important!)
+exclude = [
+    "*/__pycache__/*",
+    "*.pyc",
+    "*.pyo",
+    "*.nbc",
+    "*.nbi",
+    ".ipynb_checkpoints",
+    "examples/*",
+    "tests/*",
+    "research/*",
+    "src/npearth/data/*"
+]
 
 [tool.poetry.dependencies]
-python = "^3.11"  # Adjust as necessary
-numpy = "^2.0.0"  # Add other dependencies here
+python = "^3.11"
+numpy = "^2.0.0"
 numba = "^0.62.1"
 scipy = "^1.16.3"
-
-[build-system]
-requires = ["poetry-core>=1.0.0"]
-build-backend = "poetry.core.masonry.api"
 
 [dependency-groups]
 dev = [
     "pytest (>=9.0.1,<10.0.0)"
 ]
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
