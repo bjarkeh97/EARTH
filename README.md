@@ -36,7 +36,7 @@ A minimal example of fitting an EARTH model:
 
 ```python
 import numpy as np
-from npearth.earth import Earth
+from npearth.earth import EARTH
 
 # Generate sample data
 x = np.linspace(0, 10, 200)
@@ -44,7 +44,7 @@ y = np.sin(x) + 0.1 * np.random.randn(200)
 X = x.reshape(-1, 1)
 
 # Fit model
-model = Earth()
+model = EARTH()
 model.fit(X, y)
 
 # Predict
