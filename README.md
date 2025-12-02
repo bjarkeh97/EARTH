@@ -98,7 +98,8 @@ The following items may be added in future releases:
 
 * Packaging and release on PyPI
 * Model diagnostics, including ANOVA decompositions as in Friedman (1991)
-* Additional statistical summaries and tools
+* Additional statistical summaries and tools like confidence intervals
+* Bagging
 
 ## License
 
