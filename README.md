@@ -68,18 +68,12 @@ tests/                         Unit tests
 
 ## Examples
 
-Example scripts demonstrating typical use cases are available in the `examples/` directory:
+Example scripts demonstrating typical use cases are available in the `examples/` directory. Examples might need you to install eg scikit-learn, matplotlib for running the notebook but should be straight forward:
 
 * `example_linear.py`
 * `example_sine.py`
 * `example_complex_multidim.py`
 * `example_weights.py`
-
-Run an example with:
-
-```
-python examples/example_sine.py
-```
 
 ## Contributing
 
@@ -105,11 +99,12 @@ The following items may be added in future releases:
 
 This project is licensed under the MIT License.
 
-## Acknowledgements
+** References
+This implementation is inspired by the MARS chapter (page 321) in **The Elements of Statistical Learning by Friedman**.
+Some references for the implementation:
 
-This implementation is inspired by foundational and prior work on MARS models, including:
+1) Jerome H. Friedman (1991): Multivariate Adaptive Regression Splines, The Annals of Statistics, 19(1), 1–67.
+2) The py-earth project: https://github.com/scikit-learn-contrib/py-earth
+3) Stephen Milborrow’s notes (http://www.milbo.org/doc/earth-notes.pdf) from the R package (http://CRAN.R-project.org/package=earth)
 
-* Jerome H. Friedman (1991): *Multivariate Adaptive Regression Splines*, The Annals of Statistics, 19(1), 1–67.
-* The py-earth project: [https://github.com/scikit-learn-contrib/py-earth](https://github.com/scikit-learn-contrib/py-earth)
-
-These works provided important reference material for algorithmic details, practical considerations, and design structure.
+(1) was the primary source for implementing the model. (2) provided valuable insights with its sources and project structure. Given that this project was also a MARS implementation but is no longer actively maintained and is written in Cython, it inspired me to do this project primarily using NumPy/Numba for better maintainability. (3) explained some ideas about the implementation.

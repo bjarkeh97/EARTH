@@ -4,9 +4,6 @@ import numpy as np
 from matplotlib import pyplot as plt
 
 from npearth.earth import EARTH
-from npearth._knotsearcher_cholesky import KnotSearcherCholesky
-from npearth._knotsearcher_cholesky_numba import KnotSearcherCholeskyNumba
-from npearth._knotsearcher_svd import KnotSearcherSVD
 
 if __name__ == "__main__":
     from sklearn.model_selection import train_test_split
@@ -34,6 +31,7 @@ if __name__ == "__main__":
                 X1, [X1 < 5, X1 >= 5], [lambda x: 2 * x, lambda x: -0.5 * x + 10]
             )
             + 3 * np.sin(X2)
+            + 2 * np.log(abs(X1) + 1) / (X3 + X2)
             + 0.5 * X3**2
             + 0.3 * X1 * X2
             + np.random.normal(0, noise_level, n_samples)
@@ -48,29 +46,15 @@ if __name__ == "__main__":
 
     # Step 2: Split Data
     n = 2000
-    X, y = generate_data(n_samples=n, noise_level=1, noisy_features=5)
+    X, y = generate_data(n_samples=n, noise_level=0.6, noisy_features=5)
     X_train, X_test, y_train, y_test = train_test_split(
         X, y, test_size=0.4, random_state=42
     )
 
     # Step 3: Fit the EARTH Model
     earth_model = EARTH(M_max=15, ridge=1e-6)
-    t0 = timer()
-    earth_model.fit(X_train, y_train)
-    t1 = timer()
-    print(f"Cholesky took time {round(t1-t0,5)}")
-
-    # earth_model_svd = EARTH(M_max=15, knot_searcher=KnotSearcherSVD)
-    # t2 = timer()
-    # earth_model_svd.fit(X_train, y_train)
-    # t3 = timer()
-    # print(f"SVD took time {round(t3-t2,5)}")
-
-    earth_model_np = EARTH(
-        M_max=15, knot_searcher=KnotSearcherCholeskyNumba, ridge=1e-6
-    )
     t2 = timer()
-    earth_model_np.fit(X_train, y_train)
+    earth_model.fit(X_train, y_train)
     t3 = timer()
     print(f"Numba took time {round(t3-t2,5)}")
 
