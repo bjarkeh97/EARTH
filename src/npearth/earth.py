@@ -20,9 +20,9 @@ class EARTH:
         prune_model: bool = True,
     ) -> None:
         """
-        Multivariate Adaptive Regression Splines (MARS) regressor [1].
+        Multivariate Adaptive Regression Splines (EARTH) regressor [1].
 
-        A lightweight sklearn-compatible implementation of the MARS algorithm.
+        A lightweight sklearn-compatible implementation of the EARTH algorithm.
         The model fits a series of basis functions (hinge functions) using a forward–pass and optionally applies pruning.
 
         Parameters
@@ -105,7 +105,7 @@ class EARTH:
         self, X: np.ndarray, y: np.ndarray, sample_weight: Optional[np.ndarray] = None
     ) -> EARTH:
         """
-        Fit the EARTH/MARS model.
+        Fit the EARTH model.
         Employs algorithm 2 (ForwardPasser) and 3 (BackwardsStepwise) in [1]. Pruning is not needded for fitting model
 
         Parameters

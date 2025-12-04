@@ -66,7 +66,7 @@ if __name__ == "__main__":
     # y_pred_svd = earth_model_svd.predict(X)
 
     print(
-        "sum of abs residuals MARS", np.sqrt(sum((y_test - y_pred_test) ** 2)).round(4)
+        "sum of abs residuals EARTH", np.sqrt(sum((y_test - y_pred_test) ** 2)).round(4)
     )
     print(
         "sum of abs residuals DT", np.sqrt(sum((y_test - y_pred_test_dt) ** 2)).round(4)
@@ -93,7 +93,7 @@ if __name__ == "__main__":
     #     X,
     #     y_pred_svd,
     #     color="blue",
-    #     label="MARS SVD Predictions",
+    #     label="EARTH SVD Predictions",
     #     linewidth=2,
     #     linestyle="--",
     # )

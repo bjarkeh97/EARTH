@@ -1,6 +1,6 @@
 # npearth
 
-A NumPy-based implementation of the Multivariate Adaptive Regression Splines (MARS) algorithm, following Friedman’s original paper, with support for weighted regression. The goal of this project is to provide a lightweight, efficient, and transparent implementation suitable for research, numerical experiments, and scientific computing. For an introduction to the MARS model please read https://w.wiki/GVPL and Chapter 9.4 in *The Elements of Statistical Learning* by Friedman, Tibshirani and Hastie
+A NumPy-based implementation of the Multivariate Adaptive Regression Splines (EARTH) algorithm, following Friedman’s original paper, with support for weighted regression. The goal of this project is to provide a lightweight, efficient, and transparent implementation suitable for research, numerical experiments, and scientific computing. For an introduction to the EARTH model please read https://w.wiki/GVPL and Chapter 9.4 in *The Elements of Statistical Learning* by Friedman, Tibshirani and Hastie
 
 ## Overview
 
@@ -101,7 +101,7 @@ The following items could be interesting for future releases:
 This project is licensed under the MIT License.
 
 ## References
-This implementation is inspired by the MARS chapter (page 321) in *The Elements of Statistical Learning* by Friedman, Tibshirani and Hastie.
+This implementation is inspired by Chapter 9.4 in *The Elements of Statistical Learning* by Friedman, Tibshirani and Hastie.
 
 Some references for the implementation:
 
@@ -109,4 +109,4 @@ Some references for the implementation:
 2) The py-earth project: https://github.com/scikit-learn-contrib/py-earth
 3) Stephen Milborrow’s notes (http://www.milbo.org/doc/earth-notes.pdf) from the R package (http://CRAN.R-project.org/package=earth)
 
-(1) was the primary source for implementing the model. (2) provided valuable insights with its sources and project structure. Given that this project was also a MARS implementation but is no longer actively maintained and is written in Cython, it inspired me to do this project primarily using NumPy/Numba for better maintainability. (3) explained some ideas about the implementation.
+(1) was the primary source for implementing the model. (2) provided valuable insights with its sources and project structure. Given that this project was also an EARTH implementation but is no longer actively maintained (it seems) and is written in Cython, it inspired me to do this project primarily using NumPy/Numba for better maintainability. (3) explained some ideas about the implementation.

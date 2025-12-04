@@ -6,7 +6,7 @@ from npearth._basis_function import BasisMatrix
 
 class KnotSearcherBase(ABC):
     """
-    Abstract base class for knot searching algorithms used in MARS.
+    Abstract base class for knot searching algorithms used in EARTH.
     Subclasses must implement the `search_over_knots` method.
     """
 

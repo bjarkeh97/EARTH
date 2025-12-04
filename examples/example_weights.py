@@ -97,7 +97,7 @@ if __name__ == "__main__":
     y_pred_svd = earth_model_svd.predict(X)
 
     print(
-        "sum of abs residuals MARS",
+        "sum of abs residuals EARTH",
         np.sqrt(sum(((y_test - y_pred_test) * sample_weight_test) ** 2)).round(4),
     )
     print(
@@ -117,7 +117,7 @@ if __name__ == "__main__":
         X,
         y_pred,
         color="red",
-        label="MARS Numba with Cholesky Predictions",
+        label="EARTH Numba with Cholesky Predictions",
         linewidth=2,
     )
     plt.plot(
@@ -132,7 +132,7 @@ if __name__ == "__main__":
         X,
         y_pred_svd,
         color="blue",
-        label="MARS SVD Predictions",
+        label="EARTH SVD Predictions",
         linewidth=2,
         linestyle="--",
     )
