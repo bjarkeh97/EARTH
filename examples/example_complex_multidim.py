@@ -27,7 +27,8 @@ if __name__ == "__main__":
 
         # Generate a spline effect with interactions
         Y = (
-            np.piecewise(
+            1
+            + np.piecewise(
                 X1, [X1 < 5, X1 >= 5], [lambda x: 2 * x, lambda x: -0.5 * x + 10]
             )
             + 3 * np.sin(X2)

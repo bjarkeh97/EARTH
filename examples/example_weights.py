@@ -101,7 +101,7 @@ if __name__ == "__main__":
         np.sqrt(sum(((y_test - y_pred_test) * sample_weight_test) ** 2)).round(4),
     )
     print(
-        "sum of abs residuals DT",
+        "sum of abs residuals RF",
         np.sqrt(sum(((y_test - y_pred_test_dt) * sample_weight_test) ** 2)).round(4),
     )
     print(
@@ -113,7 +113,13 @@ if __name__ == "__main__":
     plt.figure(figsize=(10, 6))
     plt.scatter(X_train, y_train, color="blue", label="Training Data", alpha=0.5)
     plt.scatter(X_test, y_test, color="orange", label="Test Data", alpha=0.5)
-    plt.plot(X, y_pred, color="red", label="Predictions", linewidth=2)
+    plt.plot(
+        X,
+        y_pred,
+        color="red",
+        label="MARS Numba with Cholesky Predictions",
+        linewidth=2,
+    )
     plt.plot(
         X,
         y_pred_mlp,
@@ -134,11 +140,11 @@ if __name__ == "__main__":
         X,
         y_pred_dt,
         color="purple",
-        label="Decision Tree Predictions",
+        label="Random Forest Predictions",
         linewidth=2,
         linestyle="-.",
     )
-    plt.title("EARTH Model Fit on Sine Curve")
+    plt.title("EARTH Model Fit on Sine Curve with heteroscedastic Noise")
     plt.xlabel("X")
     plt.ylabel("y")
     plt.legend()

@@ -1,16 +1,15 @@
 # npearth
 
-A NumPy-based implementation of the Multivariate Adaptive Regression Splines (MARS) algorithm, following Friedman’s original paper, with support for weighted regression. The goal of this project is to provide a lightweight, efficient, and transparent implementation suitable for research, numerical experiments, and scientific computing.
+A NumPy-based implementation of the Multivariate Adaptive Regression Splines (MARS) algorithm, following Friedman’s original paper, with support for weighted regression. The goal of this project is to provide a lightweight, efficient, and transparent implementation suitable for research, numerical experiments, and scientific computing. For an introduction to the MARS model please read https://w.wiki/GVPL and Chapter 9.4 in *The Elements of Statistical Learning* by Friedman, Tibshirani and Hastie
 
 ## Overview
 
 `npearth` implements the main components of the EARTH algorithm:
 
-* Forward pass using hinge functions and interaction terms
+* Forward pass using hinge functions and interaction terms with RMSE as loss function
 * Backward pruning based on Generalized Cross Validation (GCV)
 * Efficient regression fitting using Cholesky updates
 * Weighted regression support
-* Modular and extensible architecture
 
 The package is implemented using NumPy and Numba, with a focus on clarity, performance, and maintainability.
 
@@ -30,26 +29,6 @@ cd EARTH
 pip install -e .
 ```
 
-## Quick Start
-
-A minimal example of fitting an EARTH model:
-
-```python
-import numpy as np
-from npearth.earth import EARTH
-
-# Generate sample data
-x = np.linspace(0, 10, 200)
-y = np.sin(x) + 0.1 * np.random.randn(200)
-X = x.reshape(-1, 1)
-
-# Fit model
-model = EARTH()
-model.fit(X, y)
-
-# Predict
-y_pred = model.predict(X)
-```
 
 ## Project Structure
 
@@ -99,8 +78,9 @@ The following items may be added in future releases:
 
 This project is licensed under the MIT License.
 
-** References
-This implementation is inspired by the MARS chapter (page 321) in **The Elements of Statistical Learning by Friedman**.
+## References
+This implementation is inspired by the MARS chapter (page 321) in *The Elements of Statistical Learning* by Friedman, Tibshirani and Hastie.
+
 Some references for the implementation:
 
 1) Jerome H. Friedman (1991): Multivariate Adaptive Regression Splines, The Annals of Statistics, 19(1), 1–67.
