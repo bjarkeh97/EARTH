@@ -18,15 +18,36 @@ The package is implemented using NumPy and Numba, with a focus on clarity, perfo
 The package is currently distributed directly from GitHub. Install using:
 
 ```
-pip install git+https://github.com/bjarkeh97/EARTH.git
+pip install git+https://github.com/bjarkeh97/EARTH  
 ```
 
-Alternatively, clone the repository manually:
+## Quick start
 
 ```
-git clone https://github.com/bjarkeh97/EARTH
-cd EARTH
-pip install -e .
+from npearth.earth import EARTH
+import numpy as np
+from time import time as timer
+
+np.random.seed(42)  # For reproducibility
+N = 1000
+X = np.random.rand(N, 4)  # N samples, 3 features, one noisy feature
+y = (
+    4 + 2 * X[:, 0] + 3 * X[:, 1] - 1 * X[:, 2] + 0.0 * np.random.randn(N)
+)  # Linear combination with noise
+
+# Step 2: Create an instance of EARTH and fit the model
+earth_model = EARTH(M_max=8)
+t0 = timer()
+earth_model.fit(X, y)
+print("Took time ", round(timer() - t0, 3), "seconds")
+print("earth coefs ", earth_model.coef_)
+# Step 3: Make predictions on the same input
+y_pred = earth_model.predict(X)
+
+# Step 4: Print the results (printing just the first 5 for brevity)
+print("Original y values (first 5):", y[:5])
+print("Predicted y values (first 5):", y_pred[:5])
+print("SSR", ((y - y_pred) ** 2).sum())
 ```
 
 
@@ -49,10 +70,11 @@ tests/                         Unit tests
 
 Example scripts demonstrating typical use cases are available in the `examples/` directory. Examples might need you to install eg scikit-learn, matplotlib for running the notebook but should be straight forward:
 
-* `example_linear.py`
-* `example_sine.py`
-* `example_complex_multidim.py`
-* `example_weights.py`
+* `example_linear.py`   # Very simple example also given in quick start
+* `example_sine.py`     # Fit a sine function and compare to Random Forest and MLP
+* `example_complex_multidim.py`   # More complex fit and show the power of EARTH
+* `example_weights.py`      # Weighted regression on heteroscedastic data
+* `generating_confidence_bands.ipynb`   # Simple example of how to generate confidence bands from epistemic uncertainty in model parameters
 
 ## Contributing
 
@@ -67,7 +89,7 @@ To contribute:
 
 ## Roadmap
 
-The following items may be added in future releases:
+The following items could be interesting for future releases:
 
 * Packaging and release on PyPI
 * Model diagnostics, including ANOVA decompositions as in Friedman (1991)
