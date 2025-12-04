@@ -18,7 +18,7 @@ The package is implemented using NumPy and Numba, with a focus on clarity, perfo
 The package is currently distributed directly from GitHub. Install using:
 
 ```
-pip install git+https://github.com/bjarkeh97/EARTH  
+pip install git+https://github.com/bjarkeh97/npearth  
 ```
 
 ## Quick start
